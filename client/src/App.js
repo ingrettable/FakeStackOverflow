@@ -3,10 +3,22 @@
 import './stylesheets/App.css';
 import FakeStackOverflow from './components/fakestackoverflow.js'
 
+// function App() {
+//   return (
+//     <section className="fakeso">
+//       <FakeStackOverflow />
+//     </section>
+//   );
+// }
+
 function App() {
+  const port = "8000";
+  const server = `http://localhost:${port}`;
+
   return (
     <section className="fakeso">
-      <FakeStackOverflow />
+      <link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' />
+      <FakeStackOverflow server={server} />
     </section>
   );
 }
