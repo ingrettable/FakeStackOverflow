@@ -6,6 +6,9 @@ let Tag = require('./models/tags')
 let Answer = require('./models/answers')
 let Question = require('./models/questions')
 
+const bcrypt = require('bcrypt');
+const User = require('./models/users');
+
 
 let mongoose = require('mongoose');
 let mongoDB = "mongodb://127.0.0.1:27017/fake_so";
@@ -36,11 +39,93 @@ app.get('/', (req, res) => {
   res.send('Hello World!');
 });
 
-app.listen(port, () => {
-  console.log(`Server is running at http://localhost:${port}`);
+// check email exists
+
+app.post('/checkEmail', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking email existence:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
-// Create a new question
+// Add this route
+app.post('/checkUsername', async (req, res) => {
+  const { username } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.json({ exists: true });
+    } else {
+      return res.json({ exists: false });
+    }
+  } catch (error) {
+    console.error('Error checking username existence:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+//register 
+app.post('/register', async (req, res) => {
+  const { username, email, password } = req.body;
+
+  try {
+    const existingUser = await User.findOne({ username });
+
+    if (existingUser) {
+      return res.status(400).json({ error: 'Username already exists' });
+    }
+   // const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = new User({
+      username,
+      email,
+      password: password,
+    });
+    await newUser.save();
+    res.status(201).json({ message: 'User registered successfully' });
+  } catch (error) {
+    console.error('Error during registration:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+//login 
+app.post('/login', async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(401).json({ error: 'No User' });
+    }
+    
+    const passwordMatch = await bcrypt.compare(password, user.password);
+
+    if (passwordMatch) {
+      res.json({ message: 'Login successful', email: user.email });
+    } else {
+      console.log(email, password, passwordMatch, user.password)
+      res.status(401).json({ error: 'Invalid username or password' });
+    }
+  } catch (error) {
+    console.error('Error during login:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
 app.post('/posts/questions', async (req, res) => {
   console.log(req.body)
   const { title, text, tags, asked_by, ask_date_time, views } = req.body;
@@ -238,3 +323,6 @@ app.get('/posts/answers/:id', async (req, res) => {
   }
 });
 
+app.listen(port, () => {
+  console.log(`Server is running at http://localhost:${port}`);
+});

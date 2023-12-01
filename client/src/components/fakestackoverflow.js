@@ -17,8 +17,10 @@ import AnswerInfo from './question/answerInfo';
 import QuestionsByTagsHeader from './headers/questionsByTagHeader';
 import SearchHeader from './headers/searchHeader';
 import axios from 'axios';
+import WelcomePage from './WelcomePage';
 
 export default function FakeStackOverflow({ server }) {
+  //const [WelcomePage, setWelcomePage] = useState('questions');
   const [fullQuestions, setFullQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [answers, setAnswers] = useState([])
@@ -27,6 +29,13 @@ export default function FakeStackOverflow({ server }) {
   const [pickTag, setPickTag] = useState({});
   const [tags, setTags] = useState([]);
   const [search, setSearch] = useState({});
+
+  // useEffect(() => {
+  //   // Redirect to the WelcomePage if the screen is refreshed
+  //   if (currentPage === 'login') {
+  //     setWelcomePage('login');
+  //   }
+  // }, [currentPage]);
 
   // fetch questions
   const [qCount, setQcount] = useState(0);
@@ -97,7 +106,7 @@ export default function FakeStackOverflow({ server }) {
       console.log('Tag posted successfully:', response.data);
       const getAllNewTags = await axios.get(`${server}/posts/tags`);
       setTags(getAllNewTags.data);
-    return response.data;
+      return response.data;
     } catch (error) {
       console.error('Error posting tag:', error);
     }
@@ -254,9 +263,36 @@ export default function FakeStackOverflow({ server }) {
     setCurrentPage("questionsByTag");
   };
 
+  // const [userData, setUserData] = useState({});
+  // const [userQuestions, setUserQuestions] = useState([]);
+  // const [userTags, setUserTags] = useState([]);
+  // const [userAnswers, setUserAnswers] = useState([]);
+
+  // const fetchUserData = async () => {
+  //   try {
+  //     const userResponse = await axios.get(`/api/users/${userId}`);
+  //     setUserData(userResponse.data);
+
+  //     const questionsResponse = await axios.get(`/api/users/${userId}/questions`);
+  //     setUserQuestions(questionsResponse.data);
+
+  //     const tagsResponse = await axios.get(`/api/users/${userId}/tags`);
+  //     setUserTags(tagsResponse.data);
+
+  //     const answersResponse = await axios.get(`/api/users/${userId}/answers`);
+  //     setUserAnswers(answersResponse.data);
+  //   } catch (error) {
+  //     console.error('Error fetching user data:', error);
+  //   }
+  // };
+
   return (
     <div className="page">
       <div className="head">
+        <div className="profile">
+        <button className="buttonStyle">
+          Profile </button>
+        </div>
         <div className="headerTitle">
           <h1>🧚‍♀️✨Fake Stack Overflow🧚‍♀️✨</h1>
         </div>
@@ -274,6 +310,7 @@ export default function FakeStackOverflow({ server }) {
       </div>
 
       <div className="mainContent">
+        {/* {(currentPage === 'welcome') && <WelcomePage setWelcomePage={setCurrentPage} />} */}
         {(currentPage === "questions") && <QuestionHeader resetFilter={resetFilter} setAskQuestionsPage={setAskQuestionsPage} />}
         {(currentPage === "search") && <SearchHeader />}
         {(currentPage === "search") && <QuestionsPage questions={filteredQuestions} tags={tags} answers={answers} setPickedQuestion={setPickedQuestion} />}

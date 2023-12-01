@@ -13,11 +13,27 @@
   justify-content: space-between;
 }
 
+.login-page {
+  flex: 1;
+  padding: 15px;
+  margin-top: 150px;
+  flex-direction: column;
+}
+
+
+.login-page button {
+  display: block;
+  margin: 10px auto;
+}
+
+.profile {
+  margin-left: 20px;
+}
 
 .headerTitle {
   /* flex: 1; */
   text-align: center;
-  margin-left: 30%;
+  margin-left: 10%;
 }
 
 .head input[type=text] {
@@ -87,6 +103,18 @@
 }
 
 .buttonStyle {
+  width: auto;
+  height: 60px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: rgb(201, 195, 200);
+  color: #ee0baa;
+  border: 1px dotted #ee0baa;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.buttonStyleReg {
   width: auto;
   height: 60px;
   padding: 10px 20px;
@@ -200,6 +228,22 @@ p {
 }
 
 .answerQuestionForm input[type=text] {
+  width: 100%;
+  height: 40px;
+  border: 1px dotted #ee0baa;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.answerQuestionForm input[type=email] {
+  width: 100%;
+  height: 40px;
+  border: 1px dotted #ee0baa;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.answerQuestionForm input[type=password] {
   width: 100%;
   height: 40px;
   border: 1px dotted #ee0baa;
