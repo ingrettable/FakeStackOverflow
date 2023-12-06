@@ -19,7 +19,7 @@ import SearchHeader from './headers/searchHeader';
 import axios from 'axios';
 import WelcomePage from './WelcomePage';
 
-export default function FakeStackOverflow({ server }) {
+export default function FakeStackOverflow({ server, userData }) {
   //const [WelcomePage, setWelcomePage] = useState('questions');
   const [fullQuestions, setFullQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
@@ -327,10 +327,11 @@ export default function FakeStackOverflow({ server }) {
           postQuestion={postQuestion}
           server={server}
           postTag={postTag}
+          username={userData.user}
         />
         }
         {(currentPage === "viewQuestion") && <ViewQuestionPage setCurrentPage={setCurrentPage} question={pickQuestion.question} answers={pickQuestion.answers} time={pickQuestion.time} tags={pickQuestion.tags} />}
-        {(currentPage === "answerQuestion") && <AnswerInfo answers={answers} /> && <AnswerQuestionPage addAnswertoQuestionServer={addAnswertoQuestionServer} postAnswer={postAnswer} setPickedQuestion={setPickedQuestion} pickQuestion={pickQuestion} addAnswerToQuestion={addAnswerToQuestion} question={pickQuestion.question} answers={answers} setAnswers={setAnswers} setCurrentPage={setCurrentPage} />}
+        {(currentPage === "answerQuestion") && <AnswerInfo answers={answers} /> && <AnswerQuestionPage username={userData.user} addAnswertoQuestionServer={addAnswertoQuestionServer} postAnswer={postAnswer} setPickedQuestion={setPickedQuestion} pickQuestion={pickQuestion} addAnswerToQuestion={addAnswerToQuestion} question={pickQuestion.question} answers={answers} setAnswers={setAnswers} setCurrentPage={setCurrentPage} />}
       </div>
     </div>
   );

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import ErrorPopup from './errors/errorPopup';
 
-export default function AskQuestionPage({ setQuestions, questions, setPage, createTags, server, postQuestion, postTag}) {
+export default function AskQuestionPage({ setQuestions, questions, setPage, createTags, server, postQuestion, postTag, username}) {
   // error: { id: 0, title: '', message: '' }
   const [errors, setErrors] = useState([]);
   const [title, setTitle] = useState("");
   const [text, setText] = useState("");
   const [tags, setTags] = useState("");
-  const [username, setUsername] = useState("");
+  // const [username, setUsername] = useState("");
 
   const handleTitle = (event) => {
     if (event.target.value.length <= 100) {
@@ -23,22 +23,22 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
     setTags(event.target.value);
   }
 
-  const handleUsername = (event) => {
-    setUsername(event.target.value);
-  }
+  // const handleUsername = (event) => {
+  //   setUsername(event.target.value);
+  // }
 
   const handleSubmit = async (event) => {
     event.preventDefault();
     let isInvalid = false;
     var localErr = [...errors];
-    if (username === "") {
-      localErr = [...localErr, {
-        id: localErr.length,
-        title: 'Username Error',
-        description: 'Please enter a username.'
-      }]
-      isInvalid = true;
-    }
+    // if (username === "") {
+    //   localErr = [...localErr, {
+    //     id: localErr.length,
+    //     title: 'Username Error',
+    //     description: 'Please enter a username.'
+    //   }]
+    //   isInvalid = true;
+    // }
     if (title === "") {
       localErr = [...localErr, {
         id: localErr.length,
@@ -105,7 +105,7 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
       setTitle("");
       setText("");
       setTags("");
-      setUsername("");
+      // setUsername("");
       setPage("questions");
       console.log(tids);
       // const tag = await postTag(newTags)
@@ -173,14 +173,14 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
         />
         <br />
 
-        <label htmlFor="questionUsername">Username*</label>
+        {/* <label htmlFor="questionUsername">Username*</label>
         <input type="text"
           id="questionUsername"
           name="questionUsername"
           value={username}
           onChange={handleUsername}
           required />
-        <br />
+        <br /> */}
 
         <div className="postButtonDiv">
           <input className="buttonStyle flex2" id="askQuestionPostBox" type="submit" value="Post Question" onClick={handleSubmit} />

@@ -6,6 +6,7 @@ function App() {
   const port = "8000";
   const server = `http://localhost:${port}`;
   const [currentPage, setCurrentPage] = React.useState('welcome');
+  const [userData, setUserData] = React.useState({ email: '', password: '' });
 
   const handleFakeStack = () => {
     setCurrentPage('fakeStack');
@@ -14,13 +15,13 @@ function App() {
   return (
     <div>
       {currentPage === "welcome" && 
-        <MainPage server={server} handleFakeStack={handleFakeStack} />
+        <MainPage server={server} handleFakeStack={handleFakeStack} setUserData={setUserData} />
       }
 
       {currentPage === "fakeStack" &&  
          <section className="fakeso">
          <link href='https://fonts.googleapis.com/css?family=Lobster' rel='stylesheet' />
-         <FakeStackOverflow server={server} />
+         <FakeStackOverflow userData={userData} server={server} />
        </section>
       }
     </div>

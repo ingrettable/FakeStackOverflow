@@ -10,11 +10,12 @@ export default function AnswerQuestionPage({
   setPickedQuestion,
   pickQuestion,
   postAnswer,
-  addAnswertoQuestionServer
+  addAnswertoQuestionServer,
+  username
 }) {
   // error: { id: 0, title: '', message: '' }
   const [errors, setErrors] = useState([]);
-  const [username, setUsername] = useState('');
+  // const [username, setUsername] = useState('');
   const [answerText, setAnswerText] = useState('');
 
   const handleText = (event) => {
@@ -34,14 +35,14 @@ export default function AnswerQuestionPage({
     var returnErr = false;
     var localErr = [...errors];
 
-    if (username === "") {
-      localErr = [...localErr, {
-        id: localErr.length,
-        title: 'Username Error',
-        description: 'Please enter a username.'
-      }]
-      returnErr = true
-    }
+    // if (username === "") {
+    //   localErr = [...localErr, {
+    //     id: localErr.length,
+    //     title: 'Username Error',
+    //     description: 'Please enter a username.'
+    //   }]
+    //   returnErr = true
+    // }
 
     if (answerText === "") {
       localErr = ([...localErr, {
@@ -67,7 +68,7 @@ export default function AnswerQuestionPage({
 
   
     try {
-      setUsername('');
+      // setUsername('');
       setAnswerText('');
       const response = await postAnswer(newAnswer);
       await addAnswertoQuestionServer(question._id, response._id)
@@ -92,7 +93,7 @@ export default function AnswerQuestionPage({
       }
 
       <form id="askQuestionForm" action="#" method="post" onSubmit={handleFormSubmit}>
-        <label htmlFor="username">
+        {/* <label htmlFor="username">
           Username*
           <span className="hint"> (Case sensitive)</span>
         </label>
@@ -102,7 +103,7 @@ export default function AnswerQuestionPage({
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-        />
+        /> */}
 
         <br />
         <br />

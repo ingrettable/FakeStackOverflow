@@ -5,7 +5,7 @@ import RegisterPage from './registerPage';
 import LoginPage from './loginPage';
 import axios from 'axios';
 
-export default function MainPage({ server, handleFakeStack }) {
+export default function MainPage({ server, handleFakeStack, setUserData }) {
   const [currentPage, setCurrentPage] = useState('welcome');
 
   const handleRegisterClick = () => {
@@ -40,6 +40,8 @@ export default function MainPage({ server, handleFakeStack }) {
       const response = await axios.post(`${server}/login`, userData);
       if (response.status === 200) {
         console.log('User login successful:', response.data);
+        setUserData(response.data);
+        // console.log(response.data)
         handleSignInClick();
         return true;
       } else {

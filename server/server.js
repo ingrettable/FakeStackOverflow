@@ -115,7 +115,7 @@ app.post('/login', async (req, res) => {
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (passwordMatch) {
-      res.json({ message: 'Login successful', email: user.email });
+      res.json({ message: 'Login successful', email: user.email, user: user.username });
     } else {
       console.log(email, password, passwordMatch, user.password)
       res.status(401).json({ error: 'Invalid username or password' });
