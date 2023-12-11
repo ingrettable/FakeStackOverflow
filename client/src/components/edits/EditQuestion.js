@@ -1,12 +1,31 @@
-import React, { useState } from 'react';
-import ErrorPopup from './errors/errorPopup';
+import React, { useState } from "react";
+import ErrorPopup from "../errors/errorPopup";
 
-export default function AskQuestionPage({ setQuestions, questions, setPage, createTags, server, postQuestion, postTag, userID}) {
+export default function EditQuestionPage({ 
+  setQuestions, 
+  questions, 
+  setPage, 
+  createTags, 
+  server, 
+  putQuestion, 
+  deleteQuestion,
+  postTag, 
+  userID,
+  // new stuff
+  currentTitle,
+  currentText,
+  currentTags,
+  currentQuestionID,
+}) {
   // error: { id: 0, title: '', message: '' }
+
+  // join current tags array by space
+  const currentTagsString = currentTags.join(" ");
+
   const [errors, setErrors] = useState([]);
-  const [title, setTitle] = useState("");
-  const [text, setText] = useState("");
-  const [tags, setTags] = useState("");
+  const [title, setTitle] = useState(currentTitle);
+  const [text, setText] = useState(currentText);
+  const [tags, setTags] = useState(currentTagsString);
   // const [username, setUsername] = useState("");
 
   const handleTitle = (event) => {
@@ -63,6 +82,7 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
       }]
       isInvalid = true;
     }
+    console.log("tags", tags)
   
     const tagsSet = new Set(tags.toLowerCase().split(" "));
     console.log(tagsSet, tagsSet.size);
@@ -95,9 +115,6 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
       title: title,
       text: text,
       tags: tids,
-      asked_by: userID,
-      ask_date_time: new Date(),
-      views: 0
     };
     
     try {
@@ -112,7 +129,7 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
       // console.log(tag)
 
       //console.log(questions);
-      await postQuestion(newQuestion);
+      await putQuestion(currentQuestionID, newQuestion);
     } catch (error) {
       console.error('Error posting question:', error);
     }
@@ -162,7 +179,7 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
         <br />
 
         <label htmlFor="questionTags">
-          Tags
+          Tags*
           <span className="hint"> (Whitespace-seperated keywords)</span>
         </label>
         <input type="text"
@@ -183,11 +200,12 @@ export default function AskQuestionPage({ setQuestions, questions, setPage, crea
         <br /> */}
 
         <div className="postButtonDiv">
-          <input className="buttonStyle flex2" id="askQuestionPostBox" type="submit" value="Post Question" onClick={handleSubmit} />
+          <input className="buttonStyle flex2" id="askQuestionPostBox" type="submit" value="Update Question" onClick={handleSubmit} />
           <div className="flex7"></div>
           <p className="flex3">* indicates a required field</p>
         </div>
       </form>
+      <button className="buttonStyle flex2" onClick={() => deleteQuestion(currentQuestionID)}>Delete Question</button>
     </div>
   );
 }

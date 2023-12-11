@@ -21,20 +21,34 @@ const questionSchema = new mongoose.Schema({
     ref: 'Answer'
   }],
   asked_by: {
-    default: 'Anonymous',
-    type: String,
-    //required: true,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
   },
   ask_date_time: {
     type: Date,
     default: new Date(),
-    //required: true,
   },
   views: {
     type: Number,
     default: 0,
     //required: true,
   },
+  upvoted_by: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  downvoted_by: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
+  comments: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Comment',
+  }],
+});
+
+questionSchema.virtual('votes').get(function() {
+  return this.upvoted_by.length - this.downvoted_by.length;
 });
 
 // Define a virtual property for the URL

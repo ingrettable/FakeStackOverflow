@@ -2,6 +2,21 @@
 Add design docs in *images/*
 
 ## Instructions to setup and run project
+```bash
+# open terminal
+cd server
+npm install
+node populate_db.js
+node init.js # ENTER YOUR USERNAME AND PASSWORD FOR ADMIN USER. THE LOGIN EMAIL IS "admin@admin.com" 
+npm start
+
+# Open another terminal
+cd ..
+cd client
+npm install
+npm start
+```
+
 
 ## Team Member 1 Contribution
 

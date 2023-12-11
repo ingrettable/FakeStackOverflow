@@ -1,33 +1,29 @@
 // Answer Document Schema
 const mongoose = require('mongoose');
 
-const answersSchema = new mongoose.Schema({
+const commentsSchema = new mongoose.Schema({
   text: {
     type: String,
     required: true,
   },
-  ans_by: {
+  comment_by: {
     // type: String,
     // required: true
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
   },
-  ans_date_time: {
+  comment_date_time: {
     type: Date,
     default: new Date(),
     // required: true
   },
-  comments: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Comment',
-  }],
 });
 
 // Define a virtual property for the URL
-answersSchema.virtual('url').get(function() {
-  return `posts/answer/${this._id}`;
+commentsSchema.virtual('url').get(function() {
+  return `posts/comment/${this._id}`;
 });
 
-const Answer = mongoose.model('Answer', answersSchema);
+const Comment = mongoose.model('Comment', commentsSchema);
 
-module.exports = Answer;
+module.exports = Comment;

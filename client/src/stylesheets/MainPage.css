@@ -126,6 +126,20 @@
   border-radius: 5px;
 }
 
+.disabledButton {
+  width: auto;
+  height: 60px;
+  padding: 10px 20px;
+  font-size: 16px;
+  background-color: rgb(201, 195, 200);
+  color: #ee0baa;
+  border: 1px dotted #ee0baa;
+  cursor: pointer;
+  border-radius: 5px;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
 .questionContentContainer {
   display: flex;
   align-items: stretch;

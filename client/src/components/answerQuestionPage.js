@@ -11,7 +11,7 @@ export default function AnswerQuestionPage({
   pickQuestion,
   postAnswer,
   addAnswertoQuestionServer,
-  username
+  userID
 }) {
   // error: { id: 0, title: '', message: '' }
   const [errors, setErrors] = useState([]);
@@ -62,7 +62,7 @@ export default function AnswerQuestionPage({
 
     const newAnswer = {
       text: answerText,
-      ans_by: username,
+      ans_by: userID,
       ans_date_time: new Date()
     };
 

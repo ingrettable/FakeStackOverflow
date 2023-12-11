@@ -7,7 +7,7 @@ export default function TagsPage({ questions, tags, setPickedTag }) {
 
 
   const calculateQuestionsCount = (tagId) => {
-    console.log(tags)
+    // console.log(tags)
     return questions.filter((question) => question.tags.includes(tagId)).length;
   };
 

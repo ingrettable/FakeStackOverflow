@@ -9,7 +9,6 @@ let Question = require('./models/questions')
 const bcrypt = require('bcrypt');
 const User = require('./models/users');
 
-
 let mongoose = require('mongoose');
 let mongoDB = "mongodb://127.0.0.1:27017/fake_so";
 mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
@@ -76,6 +75,48 @@ app.post('/checkUsername', async (req, res) => {
   }
 });
 
+// get all users (userID, username, reputation, date joined)
+app.get('/posts/users', async (req, res) => {
+  try {
+    const users = await User.find({});
+    // remove password from each user
+    users.forEach(user => {
+      user.password = undefined;
+    });
+    res.json(users);
+  }catch(error) {
+    console.error('Error getting all users:', error);
+    return res.status(500).json({ error: 'Internal Server Error' });
+  }
+})
+
+// update user by id
+app.put('/posts/users/:id', async (req, res) => {
+  // console.log("recieved")
+  const { id } = req.params;
+  const { reputation } = req.body;
+
+  try {
+    const updatedData = {};
+
+    if (reputation !== undefined) {
+      updatedData.reputation = reputation;
+    }
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      updatedData,
+      { new: true, useFindAndModify: false }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(updatedUser);
+  } catch (error) {
+    console.error('Error updating user:', error);
+    res.status(500).send(error);
+  }
+});
 
 //register 
 app.post('/register', async (req, res) => {
@@ -111,11 +152,10 @@ app.post('/login', async (req, res) => {
     if (!user) {
       return res.status(401).json({ error: 'No User' });
     }
-    
     const passwordMatch = await bcrypt.compare(password, user.password);
 
     if (passwordMatch) {
-      res.json({ message: 'Login successful', email: user.email, user: user.username });
+      res.json({ message: 'Login successful', userID: user._id, email: user.email, user: user.username, reputation: user.reputation, is_admin: user.is_admin, dateJoined: user.date_joined, isLoggedIn: true });
     } else {
       console.log(email, password, passwordMatch, user.password)
       res.status(401).json({ error: 'Invalid username or password' });
@@ -161,7 +201,10 @@ app.post('/posts/questions', async (req, res) => {
 app.get('/posts/questions', async (req, res) => {
   try {
     const questions = await Question.find({});
-    res.json(questions);
+    // Convert each question to a plain JavaScript object, including virtuals
+    const questionsWithVirtuals = questions.map(question => question.toObject({ virtuals: true }));
+
+    res.json(questionsWithVirtuals);
   } catch (error) {
     res.status(500).send(error);
   }
@@ -181,8 +224,15 @@ app.get('/posts/questions/:id', async (req, res) => {
 
 app.put('/posts/questions/:id', async (req, res) => {
   const { id } = req.params;
-  const { answerID } = req.body;
-  const { views } = req.body;
+  const { 
+    answerID,
+    views,
+    upvoted_by,
+    downvoted_by,
+    title,
+    text,
+    tags,
+  } = req.body;
 
   try {
     const updatedData = {};
@@ -195,6 +245,32 @@ app.put('/posts/questions/:id', async (req, res) => {
       updatedData.views = views;
     }
 
+    if (upvoted_by !== undefined) {
+      // get user id from each element
+      // console.log(upvoted_by)
+      // const upvoted_by_object_ids = upvoted_by.map(async id => await User.findById(id));
+      updatedData.upvoted_by = upvoted_by;
+    }
+
+    if (downvoted_by !== undefined) {
+      // convert each element to object id
+      // console.log(downvoted_by)
+      // const downvoted_by_object_ids = downvoted_by.map(async id => await User.findById(id));
+      updatedData.downvoted_by = downvoted_by;
+    }
+
+    if (title !== undefined) {
+      updatedData.title = title;
+    }
+
+    if (text !== undefined) {
+      updatedData.text = text;
+    }
+
+    if (tags !== undefined) {
+      updatedData.tags = tags;
+    }
+
     const updatedQuestion = await Question.findByIdAndUpdate(
       id,
       updatedData,
@@ -204,24 +280,67 @@ app.put('/posts/questions/:id', async (req, res) => {
     if (!updatedQuestion) {
       return res.status(404).json({ error: 'Question not found' });
     }
-
+    // console.log("FED DATA", updatedData,"UPDATED QUESTION", updatedQuestion)
     res.json(updatedQuestion);
   } catch (error) {
     console.error('Error updating question:', error);
     res.status(500).send(error);
   }
 });
+// DELETE QUESTION
+app.delete('/posts/questions/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // ALL ANSWERS ASSOCIATED WITH QUESTION SHOULD BE DELETED TOO
+    const deletedQuestion = await Question.findByIdAndDelete(id);
+
+    const answers = deletedQuestion.answers;
+    // loop thru each answer id
+    for (const answer_id of answers) {
+      // delete answer
+      const deletedAnswer = await Answer.findByIdAndDelete(answer_id);
+
+      if (!deletedAnswer) {
+        return res.status(404).json({ error: 'Answer not found' });
+      }
+      // console.log("DELETED ANSWER", deletedAnswer)
+    }
+
+    if (!deletedQuestion) {
+      return res.status(404).json({ error: 'Question not found' });
+    }
+    res.json(deletedQuestion);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 
+// DELETE USER
+app.delete('/posts/users/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedUser = await User.findByIdAndDelete(id);
+
+    if (!deletedUser) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    res.json(deletedUser);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
 // TAGS!!!!
 
 // Create a new tag
 app.post('/posts/tags', async (req, res) => {
-  const { name } = req.body;
+  const { name, creator } = req.body;
 
   try {
-    const newTag = new Tag({ name });
+    const newTag = new Tag({ name, creator });
     const savedTag = await newTag.save();
     res.status(201).json(savedTag);
   } catch (error) {
@@ -250,7 +369,9 @@ app.put('/posts/tags/:id', async (req, res) => {
 app.get('/posts/tags', async (req, res) => {
   try {
     const tags = await Tag.find({});
-    res.json(tags);
+    // get virtual properties 
+    const tagsWithVirtuals = tags.map(tag => tag.toObject({ virtuals: true }));
+    res.json(tagsWithVirtuals);
   } catch (error) {
     res.status(500).send(error);
   }

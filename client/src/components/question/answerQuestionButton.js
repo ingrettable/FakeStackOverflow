@@ -1,8 +1,9 @@
-export default function AnswerQuestionButton({ setAnswerQuestionPage }) {
+export default function AnswerQuestionButton({ setAnswerQuestionPage, isLoggedIn }) {
+    const className = isLoggedIn ? "buttonStyle " : "buttonStyle disabledButton";
     return (
       <div>
         <hr className="dottedhr"/>
-      <button className="buttonStyle" id="answerButton" onClick={setAnswerQuestionPage}>
+      <button className={className} id="answerButton" onClick={setAnswerQuestionPage}>
         Answer Question
       </button>
       </div>

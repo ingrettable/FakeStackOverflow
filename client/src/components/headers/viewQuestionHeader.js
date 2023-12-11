@@ -2,7 +2,7 @@ import React from 'react';
 import AskQuestionButton from '../question/askQuestionButton';
 import UserInfo from '../block-metadata/userInfo';
 
-export default function ViewQuestionHeader({ asked_by, time, answerCount, title, viewCount, text, setAskQuestionsPage }) {
+export default function ViewQuestionHeader({ asked_by, time, answerCount, title, viewCount, text, setAskQuestionsPage, isLoggedIn }) {
   return (
     <div>
       <div className="viewQuestionHeader">
@@ -10,7 +10,7 @@ export default function ViewQuestionHeader({ asked_by, time, answerCount, title,
           <p>{answerCount} answers</p>
         </div>
         <h2>{title}</h2>
-        <AskQuestionButton setAskQuestionsPage={setAskQuestionsPage} />
+        <AskQuestionButton isLoggedIn={isLoggedIn} setAskQuestionsPage={setAskQuestionsPage} />
       </div>
       <div className="viewQuestionHeader">
         <div className='viewQuestionSidebar'>

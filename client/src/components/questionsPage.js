@@ -1,45 +1,80 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Question from './question/question'
 import '../stylesheets/MainPage.css';
 import SortButtonHeader from './question/sortButtons';
 import formatElapsedTime from './lib/time';
+import IterateListButtons from './question/iterateListButton';
 
-
-export default function QuestionsPage({ questions, tags, answers, setPickedQuestion, resetFilter }) {
+export default function QuestionsPage({ questions, tags, answers, setPickedQuestion, resetFilter, fetchUserByID, getTagArray }) {
   const [sortBy, setSortBy] = useState('newest');
+  const [pageNum, setPageNum] = useState(1);
+  const [totalPages, setTotalPages] = useState(0);
+  const [shownQuestions, setShownQuestions] = useState([]);
+  const [sortQuestions, setSortQuestions] = useState([]); // array of arrays of length 5 [ [5 questions], [5 questions], ...
+
+  const NextPageNum = () => {
+    if (pageNum < totalPages) {
+      setPageNum(pageNum + 1);
+    } else {
+      setPageNum(1);
+    }
+  }
+
+  const PreviousPageNum = () => {
+    if (pageNum > 1) {
+      setPageNum(pageNum - 1);
+    } else {
+      setPageNum(1);
+    }
+  }
+
+  // use effect for sorting
+  useEffect(()=>{
+    let sortedFullQuestions = [];
+    if (sortBy === 'activity') {
+      sortedFullQuestions = sortQuestionsByActivity(questions);
+    } else if (sortBy === 'newest') {
+      sortedFullQuestions = sortQuestionsByDate(questions);
+    } else if (sortBy === 'unanswered') {
+      sortedFullQuestions = sortUnansweredQuestions(questions);
+    }
+    const split = splitQuestions(sortedFullQuestions);
+    setSortQuestions(split);
+    setTotalPages(split.length);
+    setPageNum(1);
+  }, [sortBy, questions])
+
+  useEffect(() => {
+    // console.log("SortQuestions UseEffect", sortQuestions)
+    if (sortQuestions === undefined) {
+      return;
+    }
+    if (sortQuestions.length >= pageNum) {
+      setShownQuestions(sortQuestions[pageNum - 1])
+    }
+    setTotalPages(sortQuestions.length);
+  }, [pageNum, sortQuestions]);
+
   const handleSortClick = (newSortBy) => {
     resetFilter();
     setSortBy(newSortBy);
   };
 
-  var sortQuestions = questions
-  //hi
+  // var sortQuestions = questionArray[pageNum - 1];
 
-  function getTagById(tagId) {
-    return tags.find(tag => tag._id === tagId);
-  }
 
-  
-  function getTagArray(question) {
-    //console.log(question)
-
-    const tags = question.tags.map(tagId => {
-      const tag = getTagById(tagId);
-      return tag ? tag.name : '';
-    });
-    return tags;
-  }
 
   function getLatestDate(question) {
+    // console.log("question:", question)
+    // console.log("answers:", answers)
     let latestDate = null;
-    for (const ansId of question.answers) {
-      console.log("i am sorting")
-      const answer = answers.find(ans => ans._id === ansId);
-      if (answer && answer.ans_date_time > latestDate) {
-        latestDate = answer.ans_date_time;
-      }
+    if (question.answers.length === 0) {
+      return question.ask_date_time;
     }
-    console.log(latestDate);
+    for (const ansId of question.answers) {
+      const answer = answers.find(ans => ans._id === ansId);
+      latestDate = answer.ans_date_time;
+    }
     return latestDate;
   }
 
@@ -48,6 +83,7 @@ export default function QuestionsPage({ questions, tags, answers, setPickedQuest
     copy.sort((a, b) => {
       const aActivityDate = getLatestDate(a);
       const bActivityDate = getLatestDate(b);
+      // console.log("activities:", aActivityDate, bActivityDate);
 
       if (aActivityDate === null) {
         return 1;
@@ -69,6 +105,7 @@ export default function QuestionsPage({ questions, tags, answers, setPickedQuest
 
   function sortQuestionsByDate(questions) {
     const copy = [...questions];
+    // console.log(copy)
     copy.sort(function (a, b) {
       if (a.ask_date_time > b.ask_date_time) {
         return -1;
@@ -91,20 +128,35 @@ export default function QuestionsPage({ questions, tags, answers, setPickedQuest
     return unanswered;
   }
 
-  if (sortBy === 'activity') {
-    sortQuestions = sortQuestionsByActivity(questions);
-  } else if (sortBy === 'newest') {
-    sortQuestions = sortQuestionsByDate(questions);
-  } else if (sortBy === 'unanswered') {
-    sortQuestions = sortUnansweredQuestions(questions);
+// split questions into array of arrays of length 5
+const splitQuestions = (questions) => {
+  // console.log("QUESTIONS", questions)
+  const split = [];
+  var i = 0;
+  var temp_5 = [];
+  for (const question of questions) {
+    if (i < 5) {
+      temp_5.push(question);
+      i++;
+    } else {
+      split.push(temp_5);
+      temp_5 = [question];
+      i = 1;
+    }
   }
+  if (temp_5.length > 0) {
+    split.push(temp_5);
+  }
+  // console.log("SPLIT:", split)
+  return split;
+}
 
   return (
     <div>
       <SortButtonHeader questionCount={questions.length} handleSortClick={handleSortClick} sortBy={sortBy} />
       <div className="questionsList" id="questionsContainer">
         <div className="questionsList" id="questionsContainer">
-          {sortQuestions.map((question) => {
+          {shownQuestions!==undefined && shownQuestions.map((question) => {
             const tags = getTagArray(question);
             const time = formatElapsedTime(question.ask_date_time);
             const filtered_answers = answers.filter(answer => question.answers.includes(answer._id));
@@ -116,13 +168,14 @@ export default function QuestionsPage({ questions, tags, answers, setPickedQuest
                 'answers': filtered_answers
               })
             }
-            return <Question key={question._id} question={question} tags={tags} time={time} displayQuestionInfo={displayQuestionInfo} />
+            // console.log("tags", tags)
+            return <Question key={question._id} fetchUserByID={fetchUserByID} question={question} tags={tags} time={time} displayQuestionInfo={displayQuestionInfo} />
           }
           )}
           {questions.length === 0 && <div className="noQuestions">
             <h1>No questions found.</h1></div>}
         </div>
-
+          <IterateListButtons isDisabled={pageNum === 1} handleNextClick={NextPageNum} handlePreviousClick={PreviousPageNum} />
       </div>
     </div>
   );

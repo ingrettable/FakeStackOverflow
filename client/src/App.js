@@ -6,7 +6,7 @@ function App() {
   const port = "8000";
   const server = `http://localhost:${port}`;
   const [currentPage, setCurrentPage] = React.useState('welcome');
-  const [userData, setUserData] = React.useState({ email: '', password: '' });
+  const [userData, setUserData] = React.useState({ email: '', password: '', isLoggedIn: false });
 
   const handleFakeStack = () => {
     setCurrentPage('fakeStack');

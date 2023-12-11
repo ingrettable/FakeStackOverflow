@@ -1,6 +1,8 @@
-export default function AskQuestionButton({ setAskQuestionsPage }) {
-    return (
-      <button className="buttonStyle" id="askButton" onClick={setAskQuestionsPage}>
+export default function AskQuestionButton({ setAskQuestionsPage, isLoggedIn }) {
+  // console.log(isLoggedIn)
+  const className = isLoggedIn ? "buttonStyle " : "buttonStyle disabledButton";
+  return (
+      <button className={className} id="askButton" onClick={setAskQuestionsPage}>
         Ask Question
       </button>
   

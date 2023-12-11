@@ -5,7 +5,7 @@
 
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const User = require('./models/User');
+const User = require('./models/users');
 
 const adminUsername = process.argv[2];
 const adminPassword = process.argv[3];
@@ -30,11 +30,15 @@ const setupDatabase = async () => {
     }
 
     // Hash the admin password using bcrypt
-    const hashedPassword = await bcrypt.hash(adminPassword, 10);
+    // const hashedPassword = await bcrypt.hash(adminPassword, 10);
 
     const adminUser = new User({
       username: adminUsername,
-      password: hashedPassword,
+      password: adminPassword,
+      email: 'admin@admin.com',
+      date_joined: new Date('2020-01-01'),
+      reputation: 500,
+      is_admin: true,
     });
 
     await adminUser.save();
