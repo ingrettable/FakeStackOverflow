@@ -1,6 +1,6 @@
 // upvote button 
 
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { fas } from '@fortawesome/free-solid-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
@@ -22,11 +22,16 @@ export default function VoteButtons({
   const upvoteAllowed = voteAllowed && !upvoted_by.includes(userData.userID);
   const downvoteAllowed = voteAllowed && !downvoted_by.includes(userData.userID);
 
+    // const [error, setError] = useState("");
+
   return (
+    <div>
+      {/* {error !== "" && <h1>{error}</h1>} */}
     <div className="SortButtonsHeaderContainer">
       <UpvoteButton handleUpvote={handleUpvote} upvoteAllowed={upvoteAllowed} />
       <h1>{voteCount}</h1>
       <DownvoteButton handleDownvote={handleDownvote} downvoteAllowed={downvoteAllowed}  />
+    </div>
     </div>
   );
 }
@@ -50,7 +55,7 @@ function DownvoteButton({ handleDownvote, downvoteCount, downvoteAllowed }) {
   // console.log("downvote button", className)
   return (
     <div>
-      <button className={className} onClick={handleDownvote}>
+      <button className={className} onClick={handleDownvote}> *
       <FontAwesomeIcon icon="fa-solid fa-arrow-down" />
         {/* <i class="fa-solid fa-arrow-down"></i> */}
       </button>

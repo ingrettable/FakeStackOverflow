@@ -13,6 +13,7 @@ export default function CommentList({
     // getParentByID,
     getCommentByID,
     addCommentID,
+    reputationPoints,
 }) {
   const [pageNum, setPageNum] = useState(1);
   const [shownComments, setShownComments] = useState([]);
@@ -28,10 +29,15 @@ export default function CommentList({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setCommentText("");
-    // setCommentSubmitted(true);
+    if (commentText.length > 140) {
+      return
+    }
+    if (reputationPoints < 50) {
+      return
+    }
    const commnt = await postComment(commentText, parentID);
    console.log("cmnt", commnt)
+   setCommentText("");
    addCommentID(commnt._id)
    setUpdateShownComments(updateShownComments+1)
   }
@@ -93,14 +99,18 @@ export default function CommentList({
     setTotalPages(mappedCmnts.length);
   }, [pageNum, updateShownComments]);
 
+  // const user = fetchUserByID(parentID);
+
   // console.log("shownComments", shownComments, "pageNum", pageNum, "totalPages", totalPages, "allComments", allComments)
-
-
   return (
     <div>
       {/* show 3 comments, with next button to show next 3 */}
       <h2>Comments</h2>
       {/* {comments.map(comment => <p>{comment}</p>)} */}
+
+      {(commentText !== undefined && commentText !== null) && (commentText.length >= 140) && <h1>ERROR: COMMENTS CANNOT BE GREATER THAN 140 CHARACTERS!</h1>}
+
+      {(commentText !== undefined && commentText !== null) && (commentText.length >= 1)  && (reputationPoints < 50) && <h1>ERROR: COMMENTS CANNOT BE GREATER THAN 140 CHARACTERS!</h1>}
 
       {shownComments.map(comment => 
       <Comment key={comment._id} 

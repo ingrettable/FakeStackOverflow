@@ -89,6 +89,7 @@ export default function ViewQuestion({
                     postComment={postComment} 
                     addCommentID={addCommentID}
                     getCommentByID={getCommentByID}
+                    reputationPoints={userData.reputation}
                     />
                 <AnswerInfo 
                   fetchUserByID={fetchUserByID} 
@@ -97,7 +98,8 @@ export default function ViewQuestion({
                   upvoteComment={upvoteComment}
                   isLoggedIn={isLoggedIn}
                   postComment={postComment}
-                  getCommentByID={getCommentByID}      
+                  getCommentByID={getCommentByID}  
+                  reputationPoints={userData.reputation}    
                   />
                 <AnswerQuestionButton 
                   isLoggedIn={isLoggedIn} 

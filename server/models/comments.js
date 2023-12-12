@@ -5,6 +5,7 @@ const commentsSchema = new mongoose.Schema({
   text: {
     type: String,
     required: true,
+    maxlength: 140,
   },
   comment_by: {
     // type: String,

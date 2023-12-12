@@ -10,6 +10,7 @@ const questionSchema = new mongoose.Schema({
   text: {
     type: String,
     required: true,
+    maxlength: 140,
   },
   tags: [{
     type: mongoose.Schema.Types.ObjectId,
