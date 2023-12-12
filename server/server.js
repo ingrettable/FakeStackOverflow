@@ -76,6 +76,7 @@ app.post('/checkUsername', async (req, res) => {
   }
 });
 
+
 // get all users (userID, username, reputation, date joined)
 app.get('/posts/users', async (req, res) => {
   try {

@@ -34,22 +34,29 @@ export default function LoginPage({ handleSignInClick, logOn}) {
         password
       }
       try {
-        let check = await logOn(userData);
-        if (!check) {
+        const response = await logOn(userData);
+    
+        if (response.success) {
+          // User login successful
+          setErrors([]);
+          handleSignInClick();
+        } else {
+          // Display the generic error message
           setErrors([
             {
               id: 1,
               title: 'Error',
-              description: 'Invalid email or password.',
+              description: response.message,
             },
           ]);
         }
       } catch (error) {
+        // Handle unexpected errors
         setErrors([
           {
-            id: 1,
+            id: 2,
             title: 'Error',
-            description: 'Invalid email or password.',
+            description: 'An error occurred during login. Please try again later.',
           },
         ]);
       }

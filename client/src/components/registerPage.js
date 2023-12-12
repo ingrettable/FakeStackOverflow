@@ -76,6 +76,23 @@ const RegisterPage = ({ addRegistrationToServer, setWelcomePage, checkUsernameEx
       });
     }
 
+    if (password.includes(username) || password.includes(email)) {
+      newErrors.push({
+        id: 5,
+        title: 'Error',
+        description: 'Password cannot contain the username or email.',
+      });
+    }
+
+    const emailPrefix = email.split('@')[0];
+  if (password.includes(emailPrefix)) {
+    newErrors.push({
+      id: 6,
+      title: 'Error',
+      description: 'Password cannot contain anything in the email before the @ symbol.',
+    });
+  }
+
     setErrors(newErrors);
 
     if (newErrors.length === 0) {

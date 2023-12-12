@@ -1,8 +1,3 @@
-// export default function fakeStackOverflow() {
-//   return (
-//     <h1> Replace with relevant content </h1>
-//   );
-// }
 import React, { useState, useEffect } from 'react';
 import '../stylesheets/MainPage.css';
 import QuestionsPage from './questionsPage';
@@ -17,14 +12,13 @@ import AnswerInfo from './question/answerInfo';
 import QuestionsByTagsHeader from './headers/questionsByTagHeader';
 import SearchHeader from './headers/searchHeader';
 import axios from 'axios';
-import WelcomePage from './WelcomePage';
+
 import ProfilePage from './ProfilePage';
 import ProfileButton from './headers/profileButton';
 import formatElapsedTime from './lib/time';
 import EditQuestionPage from './edits/EditQuestion';
 
 export default function FakeStackOverflow({ server, userData }) {
-  //const [WelcomePage, setWelcomePage] = useState('questions');
   const [fullQuestions, setFullQuestions] = useState([]);
   const [filteredQuestions, setFilteredQuestions] = useState([]);
   const [answers, setAnswers] = useState([])
@@ -36,7 +30,7 @@ export default function FakeStackOverflow({ server, userData }) {
   const [search, setSearch] = useState({});
   const [reputation, setReputation] = useState(userData.reputation);
   const [comments, setComments] = useState([]);
-
+  const [errorMessage, setErrorMessage] = useState('');
   // console.log("users", users)
   // useEffect(() => {
   //   // Redirect to the WelcomePage if the screen is refreshed
@@ -321,6 +315,15 @@ export default function FakeStackOverflow({ server, userData }) {
 
   const resetFilter = () => {
     setFilteredQuestions(fullQuestions);
+  }
+
+  const handleLogout = () => {
+    try {
+      window.location.reload();
+    } catch (error) {
+      console.error("Error refreshing page:", error);
+      setErrorMessage('Logout failed. Please try again.');
+    }
   }
 
   const createTags = async (tagNames) => {
@@ -613,6 +616,10 @@ export default function FakeStackOverflow({ server, userData }) {
     <div className="page">
       <div className="head">
         <ProfileButton isLoggedIn={userData.isLoggedIn} setProfilePage={() => setCurrentPage("profile")} />
+        <button className='buttonStyle' onClick={handleLogout}>
+        Log Out
+      </button>
+      {errorMessage && <div className="error-message">{errorMessage}</div>}
         <div className="headerTitle">
           <h1>🧚‍♀️✨Fake Stack Overflow🧚‍♀️✨</h1>
         </div>
@@ -748,6 +755,7 @@ export default function FakeStackOverflow({ server, userData }) {
           currentTags={pickQuestion.tags}
           currentQuestionID={pickQuestion.question._id}
         />}
+        {/* {(currentPage === "welcome") && <WelcomePage/>} */}
 
       </div>
     </div>

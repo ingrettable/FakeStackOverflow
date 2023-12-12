@@ -43,15 +43,12 @@ export default function MainPage({ server, handleFakeStack, setUserData }) {
         setUserData(response.data);
         // console.log(response.data)
         handleSignInClick();
-        return true;
+        return { success: true, data: response.data };
       } else {
-        console.error('Login failed with status:', response.status);
-        console.error('Response data:', response.data);
-        return false;
+        return { success: false, message: 'Invalid email or password.' }
       }
     } catch (error) {
-      console.error('Error during login:', error);
-      return error;
+      return { success: false, message: 'Invalid email or password.' };
     }
   }
   
