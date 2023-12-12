@@ -9,15 +9,18 @@ export default function CommentList({
     isLoggedIn,
     postComment,
     parentID,
-    fetchUserByID
+    fetchUserByID,
+    getParentByID,
+    getCommentByID,
+    addCommentID,
 }) {
-  const [allComments, setAllComments] = useState(comments);
   const [pageNum, setPageNum] = useState(1);
   const [shownComments, setShownComments] = useState([]);
   const [totalPages, setTotalPages] = useState(0);
 
   // input box to add a comment
   const [commentText, setCommentText] = useState("");
+  const [updateShownComments, setUpdateShownComments] = useState(1);
 
   const handleChange = (e) => {
     setCommentText(e.target.value);
@@ -25,9 +28,12 @@ export default function CommentList({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setCommentText("");
     // setCommentSubmitted(true);
-   await postComment(commentText,parentID);
-    // addComment(cmnt)
+   const commnt = await postComment(commentText, parentID);
+   console.log("cmnt", commnt)
+   addCommentID(commnt._id)
+   setUpdateShownComments(updateShownComments+1)
   }
 
   // add comment to list of comments
@@ -59,25 +65,33 @@ export default function CommentList({
     }
     return split;
   }
-  useEffect(()=>{
-    setAllComments(comments)
-  }, [comments])
+  // useEffect(()=>{
+  //   setAllComments(comments)
+  // }, [comments])
 
   // use effect to set shown comments
   useEffect(() => {
-    if (allComments === undefined) {
+    // const cmnts = getCommentsFromParent()
+    // setAllComments(cmnts)
+
+    if (comments === undefined) {
       return;
     }
-    console.log(allComments)
 
+    // console.log("comments", comments)
+
+    // convert all comments from id to comment object
+    const mappedCmnts = comments.map(commentID => getCommentByID(commentID));
+
+    // console.log(allComments)
     // split comments into pages of 3
-    const split = splitComments(allComments);
+    const split = splitComments(mappedCmnts);
 
     if (split.length >= pageNum) {
       setShownComments(split[pageNum - 1])
     }
-    setTotalPages(allComments.length);
-  }, [pageNum, allComments]);
+    setTotalPages(mappedCmnts.length);
+  }, [pageNum, updateShownComments]);
 
   // console.log("shownComments", shownComments, "pageNum", pageNum, "totalPages", totalPages, "allComments", allComments)
 
@@ -86,6 +100,8 @@ export default function CommentList({
     <div>
       {/* show 3 comments, with next button to show next 3 */}
       <h2>Comments</h2>
+      {/* {comments.map(comment => <p>{comment}</p>)} */}
+
       {shownComments.map(comment => 
       <Comment key={comment._id} 
         comment={comment}     
@@ -99,7 +115,6 @@ export default function CommentList({
         <input type="text" id="comment" name="comment" value={commentText} onChange={handleChange} />
         <button type="submit">Submit</button>
       </form>
-      {/* {commentSubmitted && <p>Comment submitted!</p>} */}
       <button onClick={nextPageNum}>Next</button>
       <button onClick={previousPageNum}>Previous</button>
     </div>
@@ -125,6 +140,7 @@ function Comment({
 
   useEffect(()=>{
     setVotes(comment.upvoted_by.length)
+    // console.log(comment)
   }, [comment])
 
   return (
