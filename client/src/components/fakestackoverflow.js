@@ -30,7 +30,7 @@ export default function FakeStackOverflow({ server, userData }) {
   const [search, setSearch] = useState({});
   const [reputation, setReputation] = useState(userData.reputation);
   const [comments, setComments] = useState([]);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [error, setError] = useState(null);
   // console.log("users", users)
   // useEffect(() => {
   //   // Redirect to the WelcomePage if the screen is refreshed
@@ -156,6 +156,7 @@ export default function FakeStackOverflow({ server, userData }) {
         setFilteredQuestions(response.data);
       } catch (error) {
         console.error('Error fetching data:', error);
+        setError('Communication failure. Please try again.');
       }
     };
     fetchQuestions();
@@ -325,7 +326,7 @@ export default function FakeStackOverflow({ server, userData }) {
       window.location.reload();
     } catch (error) {
       console.error("Error refreshing page:", error);
-      setErrorMessage('Logout failed. Please try again.');
+      setError('Logout failed. Please try again.');
     }
   }
 
@@ -404,6 +405,11 @@ export default function FakeStackOverflow({ server, userData }) {
 
   const setAskQuestionsPage = () => {
     setCurrentPage("askQuestion");
+  };
+  const handleRestart = () => {
+    window.location.reload();
+    setError(null);
+
   };
 
   // pick question by id number
@@ -638,6 +644,8 @@ export default function FakeStackOverflow({ server, userData }) {
     }
   }
 
+  
+
   const getUserByID = (_id) => {
     return users.find(user => user._id === _id);
   }
@@ -657,7 +665,7 @@ export default function FakeStackOverflow({ server, userData }) {
         <button className='buttonStyle' onClick={handleLogout}>
         Log Out
       </button>
-      {errorMessage && <div className="error-message">{errorMessage}</div>}
+     
         <div className="headerTitle">
           <h1>🧚‍♀️✨Fake Stack Overflow🧚‍♀️✨</h1>
         </div>
@@ -675,6 +683,12 @@ export default function FakeStackOverflow({ server, userData }) {
       </div>
 
       <div className="mainContent">
+      {error && (
+          <div className="error-message">
+            <p>{error}</p>
+            <button className='buttonStyle' onClick={handleRestart}>Go Back to Welcome Page</button>
+          </div>
+        )}
         {/* {(currentPage === 'welcome') && <WelcomePage setWelcomePage={setCurrentPage} />} */}
         {(currentPage === "questions") && <QuestionHeader 
             isLoggedIn={userData.isLoggedIn} 

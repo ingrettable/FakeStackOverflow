@@ -20,6 +20,18 @@
   flex-direction: column;
 }
 
+/* Add this to your CSS file or style block in your React component */
+
+.error-message {
+  color: red;
+  font-size: 20px;
+  font-weight: bold;
+  margin-top: 10px;
+  border: 2px solid red;
+  padding: 10px;
+  border-radius: 5px;
+}
+
 
 .login-page button {
   display: block;

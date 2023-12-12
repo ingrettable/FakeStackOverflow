@@ -131,6 +131,7 @@ function Comment({
   const user = fetchUserByID(comment.comment_by);
   const username = user === undefined ? "Anonymous" : user.username;
   const already_upvoted = comment.upvoted_by.includes(user._id)
+  
   const className = already_upvoted && isLoggedIn ? "buttonStyle" : "buttonStyle disabledButton";
 
   const upvote = () => {
