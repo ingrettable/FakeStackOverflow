@@ -55,7 +55,7 @@ function userCreate(username, email, dateJoined) {
   userDetail = {
     username: username,
     email: email,
-    password: 'password',
+    password: '1234',
     reputation: 0,
     date_joined: dateJoined,
     is_admin: false
@@ -66,7 +66,6 @@ function userCreate(username, email, dateJoined) {
 }
 
 async function createQuestions() {
-
   let hamkalo = await userCreate('hamkalo', 'hamkalo@fake_so.com', new Date('2020-10-10'));
   let azad = await userCreate('azad', 'azad@fake_so.com', new Date('2020-10-11'));
   let abaya = await userCreate('abaya', 'abaya@fake_so.com', new Date('2020-10-12'));
@@ -86,7 +85,6 @@ async function createQuestions() {
   let exitCoder = await userCreate('ExitCoder', 'ExitCoder@fake_so.com', new Date('2018-06-12'));
   let sneezingCoder = await userCreate('SneezingCoder', 'SneezingCoder@fake_so.com', new Date('2022-05-19'));
   
-
   let voidCoder = await userCreate('voidCoder', 'voidCoder@fake_so.com', new Date('2020-11-01'));
   let lunarCoder = await userCreate('lunarCoder', 'lunarCoder@fake_so.com', new Date('2018-09-22'));
   let streamCoder = await userCreate('streamCoder', 'streamCoder@fake_so.com', new Date('2019-05-07'));
@@ -103,7 +101,6 @@ async function createQuestions() {
   let t6 = await tagCreate('mongodb', voidCoder);
   let t7 = await tagCreate('python', lunarCoder);
   let t8 = await tagCreate('express', streamCoder);
-
 
 
   let a1 = await answerCreate('React Router is mostly a wrapper around the history library. history handles interaction with the browser\'s window.history for you with its browser and hash histories. It also provides a memory history which is useful for environments that don\'t have a global history. This is particularly useful in mobile app development (react-native) and unit testing with Node.', hamkalo, false);

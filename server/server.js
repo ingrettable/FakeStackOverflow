@@ -5,6 +5,7 @@
 let Tag = require('./models/tags')
 let Answer = require('./models/answers')
 let Question = require('./models/questions')
+let Comment = require('./models/comments')
 
 const bcrypt = require('bcrypt');
 const User = require('./models/users');
@@ -84,7 +85,7 @@ app.get('/posts/users', async (req, res) => {
       user.password = undefined;
     });
     res.json(users);
-  }catch(error) {
+  } catch (error) {
     console.error('Error getting all users:', error);
     return res.status(500).json({ error: 'Internal Server Error' });
   }
@@ -128,7 +129,7 @@ app.post('/register', async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ error: 'Username already exists' });
     }
-   // const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10);
     const newUser = new User({
       username,
       email,
@@ -224,7 +225,7 @@ app.get('/posts/questions/:id', async (req, res) => {
 
 app.put('/posts/questions/:id', async (req, res) => {
   const { id } = req.params;
-  const { 
+  const {
     answerID,
     views,
     upvoted_by,
@@ -232,6 +233,7 @@ app.put('/posts/questions/:id', async (req, res) => {
     title,
     text,
     tags,
+    comment
   } = req.body;
 
   try {
@@ -257,6 +259,11 @@ app.put('/posts/questions/:id', async (req, res) => {
       // console.log(downvoted_by)
       // const downvoted_by_object_ids = downvoted_by.map(async id => await User.findById(id));
       updatedData.downvoted_by = downvoted_by;
+    }
+
+    if (comment !== undefined) {
+      // add comment to existing list
+      updatedData.$push = { comments: comment };
     }
 
     if (title !== undefined) {
@@ -389,6 +396,57 @@ app.get('/posts/tags/:id', async (req, res) => {
   }
 });
 
+// delete tag by id
+app.delete('/posts/tags/:id', async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const deletedTag = await Tag.findByIdAndDelete(id);
+
+    if (!deletedTag) {
+      return res.status(404).json({ error: 'Tag not found' });
+    }
+    res.json(deletedTag);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+// update tag name by id
+app.put('/posts/tags/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
+
+  try {
+
+    // first remove tag from all questions
+    const questions = await Question.find({});
+    // loop thru each question
+    for (const question of questions) {
+      // if question has tag
+      if (question.tags.includes(id)) {
+        // remove tag from question
+        const updatedQuestion = await Question.findByIdAndUpdate(
+          question._id,
+          { $pull: { tags: id } },
+          { new: true, useFindAndModify: false }
+        );
+        // console.log("UPDATED QUESTION", updatedQuestion)
+      }
+    }
+
+    const updatedTag = await Tag.findByIdAndUpdate(
+      id,
+      { name },
+      { new: true, useFindAndModify: false }
+    );
+    return res.json(updatedTag);
+  } catch (error) {
+    console.error('Error updating tag:', error);
+  }
+})
+
+
 // ANSWERS!!!!
 
 
@@ -408,7 +466,7 @@ app.post('/posts/answers', async (req, res) => {
 // Update a specific answer by ID
 app.put('/posts/answers/:id', async (req, res) => {
   const { id } = req.params;
-  const { text, ans_by, ans_date_time } = req.body;
+  const { text, ans_by, ans_date_time, comment } = req.body;
 
   try {
     const updatedAnswer = await Answer.findByIdAndUpdate(
@@ -416,6 +474,19 @@ app.put('/posts/answers/:id', async (req, res) => {
       { text, ans_by, ans_date_time },
       { new: true, useFindAndModify: false }
     );
+
+    if (comment !== undefined) {
+      const updatedData = {};
+      // add comment to existing list
+      updatedData.$push = { comments: comment };
+
+      const updatedAnswer = await Answer.findByIdAndUpdate(
+        id,
+        updatedData,
+        { new: true, useFindAndModify: false }
+      );
+    }
+
     res.json(updatedAnswer);
   } catch (error) {
     res.status(500).send(error);
@@ -443,6 +514,79 @@ app.get('/posts/answers/:id', async (req, res) => {
     res.status(500).send(error);
   }
 });
+
+// create a new comment
+app.post('/posts/comments', async (req, res) => {
+  const { text, comment_by, comment_date_time, parentID } = req.body;
+  // console.log("PARENT ID", parentID)
+  // check if parent is question or answer
+  try {
+    const newComment = new Comment({ text, comment_by, comment_date_time });
+    const savedComment = await newComment.save();
+    // include virtual 
+    const savedCommentWithVirtuals = savedComment.toObject({ virtuals: true });
+
+    try {
+      const question = await Question.findById(parentID);
+      // console.log("QUESTION", question)
+      // check if question exists
+      if (question) {
+        // add comment to question
+        const updatedQuestion = await Question.findByIdAndUpdate(
+          parentID,
+          { $push: { comments: savedCommentWithVirtuals._id } },
+          { new: true, useFindAndModify: false }
+        );
+        console.log("UPDATED QUESTION", updatedQuestion)
+      } else {
+        // add comment to answer
+        const updatedAnswer = await Answer.findByIdAndUpdate(
+          parentID,
+          { $push: { comments: savedCommentWithVirtuals._id } },
+          { new: true, useFindAndModify: false }
+        );
+        // console.log("UPDATED ANSWER", updatedAnswer)
+      }
+    } catch {
+      console.error('Error updating question or answer:', error);
+    }
+  
+    console.log("SAVED COMMENT", savedCommentWithVirtuals)
+    res.json(savedCommentWithVirtuals);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+// get all comments
+app.get('/posts/comments', async (req, res) => {
+  // get it all 
+  try {
+    const comments = await Comment.find({});
+    // include virtual 
+    const commentsWithVirtuals = comments.map(comment => comment.toObject({ virtuals: true }));
+    res.json(commentsWithVirtuals);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+})
+
+// update comment by id
+app.put('/posts/comments/:id', async (req, res) => {
+  const { id } = req.params;
+  const { upvoted_by } = req.body;
+
+  try {
+    const updatedComment = await Comment.findByIdAndUpdate(
+      id,
+      { upvoted_by },
+      { new: true, useFindAndModify: false }
+    );
+    res.json(updatedComment);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+})
+
 
 app.listen(port, () => {
   console.log(`Server is running at http://localhost:${port}`);

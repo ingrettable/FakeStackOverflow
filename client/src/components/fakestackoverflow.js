@@ -35,6 +35,7 @@ export default function FakeStackOverflow({ server, userData }) {
   const [tags, setTags] = useState([]);
   const [search, setSearch] = useState({});
   const [reputation, setReputation] = useState(userData.reputation);
+  const [comments, setComments] = useState([]);
 
   // console.log("users", users)
   // useEffect(() => {
@@ -207,6 +208,19 @@ export default function FakeStackOverflow({ server, userData }) {
       };
       fetchUsers();
     }, []);
+
+    // fetch comments
+    useEffect(() => { // grab data from server
+      const fetchComments = async () => {
+        try {
+          const response = await axios.get(`${server}/posts/comments`);
+          setComments(response.data);
+        } catch (error) {
+          console.error('Error fetching data:', error);
+        }
+      };
+      fetchComments();
+    })
   
   async function postQuestion(newQuestion) {
     try {
@@ -265,12 +279,35 @@ export default function FakeStackOverflow({ server, userData }) {
   async function updateQuestion(questionID, views) {
     try {
       const response = await axios.put(`${server}/posts/questions/${questionID}`, { views });
-      console.log('Question updated successfully:', response.data);
+      // console.log('Question updated successfully:', response.data);
       return response.data;
     } catch (error) {
       console.error('Error updating question views:', error);
     }
     qCountPP();
+  }
+
+  // upvote comment by id
+  async function upvoteComment(commentID, commentAuthor, upvoter) {
+    // check if user is in downvoted list by commentID
+    const currentComment = comments.find(comment => comment._id === commentID);
+    // exit if upvoter is already in upvoted_by list
+    if (currentComment.upvoted_by.includes(upvoter)) {return}
+    // add upvoter to comment
+    currentComment.upvoted_by.push(upvoter);
+    // update comment
+    const returned = await axios.put(`${server}/posts/comments/${commentID}`, { upvoted_by: currentComment.upvoted_by });
+
+    console.log("returned", returned.data)
+    // update comment state
+    const updatedComments = comments.map(comment => {
+      if (comment._id === commentID) {
+        return returned.data;
+      } else {
+        return comment;
+      }
+    })  
+    setComments(updatedComments);
   }
 
   const setPickedSearch = () => {
@@ -342,6 +379,8 @@ export default function FakeStackOverflow({ server, userData }) {
     setFullQuestions(updatedQuestions);
   };
 
+  // console.log(comments)
+
   const setQuestions = (questions) => {
     setFullQuestions(questions);
     setFilteredQuestions(questions);
@@ -393,11 +432,14 @@ export default function FakeStackOverflow({ server, userData }) {
       // return tag.name if tag exists, else return empty string
       // check if tag is undefined or null
       if (tag === undefined || tag === null) {
-        return '';
+        return null;
       }
       return tag.name
     });
-    return tags;
+
+    // remove nulls from array
+    const filteredTags = tags.filter(tag => tag !== null);
+    return filteredTags;
   }
 
   const setPickedQuestion = (questionInfo) => {
@@ -473,28 +515,96 @@ export default function FakeStackOverflow({ server, userData }) {
     }
   }
 
-  // const [userData, setUserData] = useState({});
-  // const [userQuestions, setUserQuestions] = useState([]);
-  // const [userTags, setUserTags] = useState([]);
-  // const [userAnswers, setUserAnswers] = useState([]);
+  const deleteTagByID = async (tagID) => {
+    try {
+      const response = await axios.delete(`${server}/posts/tags/${tagID}`);
+      console.log('Tag deleted successfully:', response.data);
+      const updatedTags = tags.filter(tag => tag._id !== tagID);
+      setTags(updatedTags);
+      removeTagFromAllQuestions(tagID);
+    } catch (error) {
+      console.error('Error deleting tag:', error);
+    }
+  }
 
-  // const fetchUserData = async () => {
-  //   try {
-  //     const userResponse = await axios.get(`/api/users/${userId}`);
-  //     setUserData(userResponse.data);
+  const updateTagByID = async (tagID, newTag) => {
+    try {
+      const response = await axios.put(`${server}/posts/tags/${tagID}`, newTag);
+      console.log('Tag updated successfully:', response.data);
+      const updatedTags = tags.map(tag => {
+        if (tag._id === tagID) {
+          return response.data;
+        } else {
+          return tag;
+        }
+      })
+      setTags(updatedTags);
+    } catch (error) {
+      console.error('Error updating tag:', error);
+    }
+  }
 
-  //     const questionsResponse = await axios.get(`/api/users/${userId}/questions`);
-  //     setUserQuestions(questionsResponse.data);
+  const removeTagFromAllQuestions = (tagID) => {
+    // remove from questions in state
+    const updatedQuestions = fullQuestions.map(question => {
+      const updatedTags = question.tags.filter(tag => tag !== tagID);
+      return { ...question, tags: updatedTags };
+    })
+  }
 
-  //     const tagsResponse = await axios.get(`/api/users/${userId}/tags`);
-  //     setUserTags(tagsResponse.data);
+  // post new comment
+  const postComment = async (commentText, parentID) => {
+    const newCommentData = {
+      text: commentText,
+      comment_by: userData.userID,
+      parentID: parentID
+    }
+    try {
+      const response = await axios.post(`${server}/posts/comments`, newCommentData);
+      console.log('Comment posted successfully:', response.data);
+      const updatedComments = [response.data, ...comments];
+      setComments(updatedComments);
 
-  //     const answersResponse = await axios.get(`/api/users/${userId}/answers`);
-  //     setUserAnswers(answersResponse.data);
-  //   } catch (error) {
-  //     console.error('Error fetching user data:', error);
-  //   }
-  // };
+          // update parent too
+        const potentialDad = fullQuestions.find(
+          question => question._id === parentID
+        )
+        if (potentialDad !== null) {
+          // add comment id to parent
+          potentialDad.comments.push(response.data._id);
+
+          // replace item in state
+          const updatedQuestions = fullQuestions.map(question => {
+            if (question._id === parentID) {
+              return potentialDad;
+            } else {
+              return question;
+            }
+          })
+          setFullQuestions(updatedQuestions);
+        }
+        const potentialMom = answers.find( answer => answer._id === parentID)
+        if (potentialMom !== null) {
+          // add comment id to parent
+          potentialMom.comments.push(response.data._id);
+
+          // replace item in state
+          const updatedAnswers = answers.map(answer => {
+            if (answer._id === parentID) {
+              return potentialMom;
+            } else {
+              return answer;
+            }
+          })
+          setAnswers(updatedAnswers);
+        }
+
+      return response.data
+    } catch (error) {
+      console.error('Error posting comment:', error);
+    }
+  }
+
   const getUserByID = (_id) => {
     return users.find(user => user._id === _id);
   }
@@ -528,6 +638,7 @@ export default function FakeStackOverflow({ server, userData }) {
         />}
         {(currentPage === "search") && <SearchHeader isLoggedIn={userData.isLoggedIn} />}
         {(currentPage === "search") && <QuestionsPage 
+        getTagArray={getTagArray}
             questions={filteredQuestions} 
             tags={tags} answers={answers} 
             setPickedQuestion={setPickedQuestion} 
@@ -546,6 +657,8 @@ export default function FakeStackOverflow({ server, userData }) {
             questions={filteredQuestions} 
             tags={tags} 
             answers={answers} 
+            getTagArray={getTagArray}
+            fetchUserByID={getUserByID}
             setPickedQuestion={setPickedQuestion} 
         />}
         {(currentPage === "questions") && <QuestionsPage 
@@ -583,6 +696,10 @@ export default function FakeStackOverflow({ server, userData }) {
               handleUpvote={upvoteQuestion}
               handleDownvote={downvoteQuestion}
               userData={userData}
+              // comment stuff
+              comments={comments}
+              upvoteComment={upvoteComment}
+              postComment={postComment}
         />}
         {(currentPage === "answerQuestion") && 
           <AnswerInfo
@@ -604,7 +721,6 @@ export default function FakeStackOverflow({ server, userData }) {
         {(currentPage === "profile") && <ProfilePage 
           questions={fullQuestions} 
           answers={answers} 
-          comments={[]} 
           users={users}
           tags={tags}
           userData={userData}
@@ -612,6 +728,8 @@ export default function FakeStackOverflow({ server, userData }) {
           setCurrentPage={setCurrentPage}
           setPickedQuestionByID={setPickedQuestionByID}
           getAnswerByID={getAnswerByID}
+          deleteTagByID={deleteTagByID}
+          editTagByID={updateTagByID}
         /> }
         {/* edit question page */}
         {(currentPage === "editQuestion") && <EditQuestionPage

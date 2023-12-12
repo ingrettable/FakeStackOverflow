@@ -16,7 +16,7 @@ export default function VoteButtons({
     userData 
   }) {
   const minReputationPoints = 50;
-  console.log("vote buttons", userData, upvoted_by, downvoted_by, voteCount)
+  // console.log("vote buttons", userData, upvoted_by, downvoted_by, voteCount)
 
   const voteAllowed = userData.isLoggedIn && userData.reputation > minReputationPoints;
   const upvoteAllowed = voteAllowed && !upvoted_by.includes(userData.userID);

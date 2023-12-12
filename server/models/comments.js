@@ -17,11 +17,20 @@ const commentsSchema = new mongoose.Schema({
     default: new Date(),
     // required: true
   },
+  upvoted_by: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+  }],
 });
 
 // Define a virtual property for the URL
 commentsSchema.virtual('url').get(function() {
   return `posts/comment/${this._id}`;
+});
+
+// virtual property for comment votes
+commentsSchema.virtual('votes').get(function() {
+  return this.upvoted_by.length;
 });
 
 const Comment = mongoose.model('Comment', commentsSchema);

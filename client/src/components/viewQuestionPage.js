@@ -1,9 +1,11 @@
 import '../stylesheets/MainPage.css';
 import React from 'react';
+import { useState, useEffect } from 'react';
 import AnswerInfo from './question/answerInfo';
 import ViewQuestionHeader from './headers/viewQuestionHeader';
 import AnswerQuestionButton from './question/answerQuestionButton';
 import VoteButtons from './headers/voteButtons';
+import CommentList from './block-metadata/comment';
 
 export default function ViewQuestion({ 
     question, 
@@ -15,8 +17,16 @@ export default function ViewQuestion({
     setCurrentPage, 
     isLoggedIn, 
     fetchUserByID, 
-    userData 
+    userData,
+    // comment stuff
+    comments,
+    upvoteComment,
+    postComment,
   }) {
+    const [questionComments, setQuestionComments] = useState([]);
+    const [commentsPassedIn, setCommentsPassedIn] = useState(comments);
+    const [questionPassedIn, setQuestionPassedIn] = useState(question);
+
     const id = fetchUserByID(question.asked_by)
     const username = id === undefined ? "Anonymous" : id.username;
     // console.log("ID", id)  
@@ -37,6 +47,26 @@ export default function ViewQuestion({
       handleDownvote(question._id, question.asked_by, userData.userID);
     }
 
+    // loop thru comments that belong to question, put in array
+    // console.log("questionx comments", question)
+
+
+    useEffect(() => {
+      // const filteredCmnts = commentsPassedIn.filter(comment => {
+      //   const cmnts = questionPassedIn.comments.includes(comment._id)
+      //   console.log("comments", cmnts, comment._id, question.comments)
+      //   return cmnts
+      // });
+      const mappedCmnts = questionPassedIn.comments.map(comment => {
+        return commentsPassedIn.find(cmnt => cmnt._id === comment);
+      })
+      // remove undefined
+      const filteredMappedCmnts = mappedCmnts.filter(cmnt => cmnt !== undefined)
+      console.log("mapped cmnts", filteredMappedCmnts)
+      setQuestionComments(filteredMappedCmnts);
+    }, [commentsPassedIn, questionPassedIn]);
+
+
     return (
         <div>
             <div>
@@ -51,6 +81,7 @@ export default function ViewQuestion({
                       downvoted_by={question.downvoted_by}
                     />
                 </div>
+                <CommentList parentID={question._id} fetchUserByID={fetchUserByID} comments={questionComments} upvoteComment={upvoteComment} isLoggedIn={isLoggedIn} postComment={postComment} />
                 <AnswerInfo fetchUserByID={fetchUserByID} answers={answers} />
                 <AnswerQuestionButton isLoggedIn={isLoggedIn} setAnswerQuestionPage={setAnswerQuestionPage} />
             </div>

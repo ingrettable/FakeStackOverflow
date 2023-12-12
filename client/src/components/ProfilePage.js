@@ -7,7 +7,7 @@ import formatElapsedTime from './lib/time';
 export default function ProfilePage({ 
   questions, 
   answers, 
-  comments, 
+  // comments, 
   tags,
   userData, 
   users,
@@ -21,7 +21,7 @@ export default function ProfilePage({
   // filter questions by user id
   const [userQuestions, setUserQuestions] = useState([]);
   const [userAnswers, setUserAnswers] = useState([]);
-  const [userComments, setUserComments] = useState([]);
+  // const [userComments, setUserComments] = useState([]);
   const [userTags, setUserTags] = useState([]);
   // console.log("Profile Page", userData, questions, answers, comments);
 
@@ -47,14 +47,19 @@ export default function ProfilePage({
     setUserTags(filteredTags);
   },[])
 
-  useEffect(() => {
-    const filteredComments = comments.filter(comment => comment.commented_by === userData.userID);
-    setUserComments(filteredComments);
-  }, [comments, userData]);
+  // useEffect(() => {
+  //   const filteredComments = comments.filter(comment => comment.commented_by === userData.userID);
+  //   setUserComments(filteredComments);
+  // }, [comments, userData]);
 
   // display reputation points and date joined:
   const [dateJoined, setDateJoined] = useState(formatElapsedTime(userData.dateJoined));
   const [reputationPoints, setReputationPoints] = useState(userData.reputation);
+
+  const removeTag = (id) => {
+    const newTags = userTags.filter(tag => tag._id !== id);
+    setUserTags(newTags);
+  }
 
   return (
     <div>
@@ -84,11 +89,13 @@ export default function ProfilePage({
           tags={userTags} 
           deleteTagByID={deleteTagByID}
           editTagByID={editTagByID}
+          questions={questions}
+          removeTag={removeTag}
       />
-      <DisplayMap  // display comments
+      {/* <DisplayMap  // display comments
           title="Comments" 
           mapper={userComments} 
-      />
+      /> */}
     </div> 
   )
 }
@@ -110,24 +117,44 @@ function DisplayMap({title, mapper, funct, pageAfter}) {
   )
 }
 
-function DisplayTags({tags, deleteTagByID, editTagByID}) {
+function DisplayTags({tags, deleteTagByID, editTagByID, questions, removeTag}) {
   return (
     <div>
       <h2>Tags</h2>
       <ul>
-        {tags.map(tag => <TagEditBox key={tag._id} tag={tag} editTagByID={editTagByID} deleteTagByID={deleteTagByID} />)}
+        {tags.map(tag => <TagEditBox key={tag._id} removeTag={removeTag} questions={questions} tag={tag} editTagByID={editTagByID} deleteTagByID={deleteTagByID} />)}
       </ul>
     </div>)
 }
 
-function TagEditBox({tag, editTagByID, deleteTagByID}) {
+function TagEditBox({tag, editTagByID, deleteTagByID, questions, removeTag}) {
   const [newTag, setNewTag] = useState(tag.name);
   const [toggle, setToggle] = useState(false);
+
+  // check if it is legal to change the tag name to the new tag name / delete tag
+  // check if any question not authored by the user has the tag
+  const checkLegal = () => {
+    for (const question of questions) {
+      if (question.asked_by !== tag.creator && question.tags.includes(tag._id)) {
+        return false;
+      }
+    }
+    return true;
+  }
+  const legality = checkLegal();
+  const classname = legality ? 'buttonStyle ' : 'buttonStyle disabledButton';
+
+  const deleteTag = () => {
+    console.log("delete tag: ", tag.name)
+    deleteTagByID(tag._id);
+    removeTag(tag._id);
+  }
+
   return (
-    <li key={tag._id}>
-      <h2>{tag.name}</h2>
-      <button className='buttonStyle' onClick={() => deleteTagByID(tag._id)} >Edit</button>
-      <button className='buttonStyle' onClick={() => setToggle(!toggle)} >Edit</button>
+   <li key={tag._id}>
+      <h2>{newTag}</h2>
+      <button className={classname} onClick={() => deleteTag()} >Delete</button>
+      <button className={classname} onClick={() => setToggle(!toggle)} >Edit</button>
       {/* make a text box that displays when user clicks edit. */}
       {toggle && <input type="text" value={newTag} onChange={e => setNewTag(e.target.value)} />}
       {toggle && <button className='buttonStyle' onClick={() => editTagByID(tag._id, newTag)} >Submit</button>}
