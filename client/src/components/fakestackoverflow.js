@@ -76,6 +76,9 @@ export default function FakeStackOverflow({ server, userData }) {
     console.log("after touch", currentQuestion)
     // update questions
     const updatedQuestions = fullQuestions.map(question => {
+      // if (question === undefined || question === null) {
+      //   return null;
+      // }
       if (question._id === questionID) {
         // console.log("found")
         return currentQuestion;
@@ -156,7 +159,7 @@ export default function FakeStackOverflow({ server, userData }) {
       }
     };
     fetchQuestions();
-  }, [])
+  }, [qCount])
 
   // fetch answers
   const [aCount, setAcount] = useState(0);
@@ -172,7 +175,7 @@ export default function FakeStackOverflow({ server, userData }) {
     };
 
     fetchAnswers();
-  }, [])
+  }, [aCount])
 
   // fetch tags
   const [tCount, setTcount] = useState(0);
@@ -187,7 +190,7 @@ export default function FakeStackOverflow({ server, userData }) {
       }
     };
     fetchTags();
-  }, []);
+  }, [tCount]);
 
     // fetch users
     useEffect(() => { // grab data from server
@@ -454,10 +457,23 @@ export default function FakeStackOverflow({ server, userData }) {
     const filteredFullQ = fullQuestions.filter(question => question._id !== questionInfo.question._id)
     setFullQuestions([...filteredFullQ, question])
 
+    // update comments
+    // const cmnts = getQuestionComments(question);
+    // questionInfo.comments = cmnts;
+
+    console.log("questionInfo", questionInfo)
+
     setPickQuestion(questionInfo)
     updateQuestion(question._id, question.views)
     setCurrentPage("viewQuestion");
   };
+
+  const setPickedQuestionComment = (comment) => {
+    setPickQuestion({
+      ...pickQuestion,
+      comments: [...pickQuestion.comments, comment]
+    })
+  }
 
   // make sure u pass in entire tag object
   const setPickedTag = (tag) => {
@@ -568,39 +584,53 @@ export default function FakeStackOverflow({ server, userData }) {
       const updatedComments = [response.data, ...comments];
       setComments(updatedComments);
 
-          // update parent too
-        const potentialDad = fullQuestions.find(
-          question => question._id === parentID
-        )
-        if (potentialDad !== null) {
-          // add comment id to parent
-          potentialDad.comments.push(response.data._id);
+      // update answer question
+      qCountPP();
+      aCountPP();
 
-          // replace item in state
-          const updatedQuestions = fullQuestions.map(question => {
-            if (question._id === parentID) {
-              return potentialDad;
-            } else {
-              return question;
-            }
-          })
-          setFullQuestions(updatedQuestions);
-        }
-        const potentialMom = answers.find( answer => answer._id === parentID)
-        if (potentialMom !== null) {
-          // add comment id to parent
-          potentialMom.comments.push(response.data._id);
+      // update parent too
+      // const potentialDad = fullQuestions.find(
+      //   question => question._id === parentID
+      // )
+      // if (potentialDad !== null && potentialDad !== undefined) {
+      //   // add comment id to parent
+      //   potentialDad.comments.push(response.data._id);
+      //   console.log("potential dad", potentialDad)
 
-          // replace item in state
-          const updatedAnswers = answers.map(answer => {
-            if (answer._id === parentID) {
-              return potentialMom;
-            } else {
-              return answer;
-            }
-          })
-          setAnswers(updatedAnswers);
-        }
+      //   // replace item in state
+      //   const updatedQuestions = fullQuestions.map(question => {
+      //     if (question._id === parentID) {
+      //       return potentialDad;
+      //     } else {
+      //       return question;
+      //     }
+      //   })
+      //   setFullQuestions(updatedQuestions);
+
+      //   // check picked question too
+      //   if (pickQuestion.question._id === parentID) {
+      //     setPickQuestion({
+      //       ...pickQuestion,
+      //       comments: [...pickQuestion.comments, response.data]
+      //     })
+      //   }
+      // }
+
+      // const potentialMom = answers.find( answer => answer._id === parentID)
+      // if (potentialMom !== null && potentialMom !== undefined) {
+      //   // add comment id to parent
+      //   potentialMom.comments.push(response.data._id);
+
+      //   // replace item in state
+      //   const updatedAnswers = answers.map(answer => {
+      //     if (answer._id === parentID) {
+      //       return potentialMom;
+      //     } else {
+      //       return answer;
+      //     }
+      //   })
+      //   setAnswers(updatedAnswers);
+      // }
 
       return response.data
     } catch (error) {
@@ -610,6 +640,14 @@ export default function FakeStackOverflow({ server, userData }) {
 
   const getUserByID = (_id) => {
     return users.find(user => user._id === _id);
+  }
+
+  const getCommentByID = (_id) => {
+    return comments.find(comment => comment._id === _id);
+  }
+
+  const getQuestionByID = (_id) => {
+    return fullQuestions.find(question => question._id === _id);
   }
 
   return (
@@ -707,6 +745,8 @@ export default function FakeStackOverflow({ server, userData }) {
               comments={comments}
               upvoteComment={upvoteComment}
               postComment={postComment}
+              getQuestionByID={getQuestionByID}
+              getCommentByID={getCommentByID}
         />}
         {(currentPage === "answerQuestion") && 
           <AnswerInfo
