@@ -10,7 +10,7 @@ export default function CommentList({
     postComment,
     parentID,
     fetchUserByID,
-    getParentByID,
+    // getParentByID,
     getCommentByID,
     addCommentID,
 }) {
@@ -113,10 +113,10 @@ export default function CommentList({
       <form onSubmit={handleSubmit}>
         <label htmlFor="comment">Add a comment:</label>
         <input type="text" id="comment" name="comment" value={commentText} onChange={handleChange} />
-        <button type="submit">Submit</button>
+        <button className="buttonStyle" type="submit">Submit</button>
       </form>
-      <button onClick={nextPageNum}>Next</button>
-      <button onClick={previousPageNum}>Previous</button>
+      <button className="buttonStyle" onClick={nextPageNum}>Next</button>
+      <button className="buttonStyle" onClick={previousPageNum}>Previous</button>
     </div>
   )
 }
@@ -129,14 +129,24 @@ function Comment({
 }) {
   const [votes, setVotes] = useState(comment.upvoted_by.length)
   const user = fetchUserByID(comment.comment_by);
+  const [alreadyUpvoted, setAlreadyUpvoted] = useState(false)
   const username = user === undefined ? "Anonymous" : user.username;
-  const already_upvoted = comment.upvoted_by.includes(user._id)
-  
-  const className = already_upvoted && isLoggedIn ? "buttonStyle" : "buttonStyle disabledButton";
+  const className = !alreadyUpvoted && isLoggedIn ? "buttonStyle" : "buttonStyle disabledButton";
+
+  useEffect(()=>{
+    if (user === undefined || user === null) {
+      return;
+    }
+    if (comment === undefined || comment === null) {
+      return;
+    }
+    setAlreadyUpvoted(comment.upvoted_by.includes(user._id))
+  }, [])
 
   const upvote = () => {
     setVotes(votes+1)
     upvoteComment(comment._id)
+    setAlreadyUpvoted(true)
   }
 
   useEffect(()=>{
