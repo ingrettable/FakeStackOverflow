@@ -112,6 +112,9 @@ function DisplayMap({title, mapper, funct, pageAfter}) {
             </li>
           )
         })}
+        {
+          mapper.length === 0 && <h3>No {title}</h3>
+        }
       </ul>
     </div>
   )
@@ -124,6 +127,7 @@ function DisplayTags({tags, deleteTagByID, editTagByID, questions, removeTag}) {
       <ul>
         {tags.map(tag => <TagEditBox key={tag._id} removeTag={removeTag} questions={questions} tag={tag} editTagByID={editTagByID} deleteTagByID={deleteTagByID} />)}
       </ul>
+      {tags.length === 0 && <h3>No Tags</h3>}
     </div>)
 }
 

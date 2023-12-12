@@ -90,8 +90,19 @@ export default function ViewQuestion({
                     addCommentID={addCommentID}
                     getCommentByID={getCommentByID}
                     />
-                <AnswerInfo fetchUserByID={fetchUserByID} answers={answers} />
-                <AnswerQuestionButton isLoggedIn={isLoggedIn} setAnswerQuestionPage={setAnswerQuestionPage} />
+                <AnswerInfo 
+                  fetchUserByID={fetchUserByID} 
+                  answers={answers}
+                  
+                  upvoteComment={upvoteComment}
+                  isLoggedIn={isLoggedIn}
+                  postComment={postComment}
+                  getCommentByID={getCommentByID}      
+                  />
+                <AnswerQuestionButton 
+                  isLoggedIn={isLoggedIn} 
+                  setAnswerQuestionPage={setAnswerQuestionPage}
+                   />
             </div>
         </div>
     );
